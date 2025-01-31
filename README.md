@@ -3,7 +3,9 @@
 ### Authors: ###
 Will Fralia<br>
 Kevin Kagawa<br>
-Fredy Fernandez
+Fredy Fernandez<br>
+Holden Tyler<br>
+Dylan [Last name] <br>
 
 **User Requirements:** <br>
 <ul>
