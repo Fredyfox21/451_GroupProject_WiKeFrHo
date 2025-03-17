@@ -39,13 +39,40 @@ export default function Home() {
 
   return (
     <div className="MainPage">
-      {user ? (
-            <p className="text-xs text-gray-500 font-bold"> Logged in as {user.email}</p>
+      <div className="Title and User Info flex justify-between w-full">
+
+
+        <div className="User Info flex flex-col w-1/9 sm:w-1/8 md:w-1/7 lg:w-1/6 xl:w-1/5 gap-4 justify-start items-center p-0 sm:p-1 md:p-2 lg:p-3 xl:p-4 m-4 bg-gray-400 rounded">
+          
+          <div className="User flex">
+
+            {user ? (
+            <p className="text-xs text-gray-900 font-bold"> Logged in as {user.email}</p>
              ) : (
               <p>Loading...</p>
               )}
-      <button onClick={handleLogout} className="text-base text-center text-white">Log out</button>
-    
+
+          </div>
+
+        <div className="Logout flex gap-2 w-full justify-center">
+
+          <div className="Logout flex justify-center items-center w-1/2 bg-red-800 hover:bg-red-900 rounded">
+          
+          <button onClick={handleLogout} className="text-base text-center text-white">Log out</button>
+
+          </div>
+
+          <div className="Logout flex justify-center items-center w-1/2 bg-red-800 hover:bg-red-900 rounded">
+          
+          <button className="text-base text-center text-white">Edit Profile</button>
+
+          </div>
+
+        </div>
+        </div>
+
+      </div>
+      
     </div>
   );
 }
