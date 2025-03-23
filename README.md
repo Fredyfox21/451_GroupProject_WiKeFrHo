@@ -5,7 +5,7 @@ Will Fralia<br>
 Kevin Kagawa<br>
 Fredy Fernandez<br>
 Holden Tyler<br>
-Dylan [Last name] <br>
+Dylan Phipps <br>
 
 **User Requirements:** <br>
 <ul>
