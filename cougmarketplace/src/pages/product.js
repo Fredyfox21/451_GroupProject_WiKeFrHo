@@ -2,7 +2,6 @@ import "../app/globals.css";
 import { useState, useEffect } from 'react';
 import { supabase } from '../utils/supabase';
 import { useRouter } from 'next/router';
-import ProductPreview from "@/components/ProductPreview";
 
 export default function Product() {
     const [images, setImages] = useState([]);
@@ -12,6 +11,12 @@ export default function Product() {
     const [seller, setSeller] = useState(null);
     const [tags, setTags] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [isMounted, setIsMounted] = useState(false); // For handling hydration
+
+    // Hydration check to ensure component only renders client-side
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     // Fetch images and data for the product
     useEffect(() => {
@@ -49,11 +54,7 @@ export default function Product() {
         fetchData();
     }, [id]);
 
-    const handleViewProduct = () => {
-        // Navigate to the product page
-    }
-
-    // Fetch seller data and tages
+    // Fetch seller data and tags
     useEffect(() => {
         if (!product) return;  // If `product` is not yet available, don't fetch data
 
@@ -90,7 +91,7 @@ export default function Product() {
 
     // Go to the next slide
     const nextSlide = () => {
-        if (images.length === 0) return;  // If there are no images, don't do anything
+        if (images.length === 0) return;
 
         setCurrentIndex((prevIndex) =>
             (prevIndex + 1) % images.length
@@ -99,32 +100,35 @@ export default function Product() {
 
     // Go to the previous slide
     const prevSlide = () => {
-    setCurrentIndex((prevIndex) => {
-        if (prevIndex === 0) {
-            return images.length - 1;
-        } else {
-            return (prevIndex - 1) % images.length;
-        }
-    });
+        setCurrentIndex((prevIndex) => {
+            if (prevIndex === 0) {
+                return images.length - 1;
+            } else {
+                return (prevIndex - 1) % images.length;
+            }
+        });
     };
 
     // Auto-slide every 5 seconds
     useEffect(() => {
         const interval = setInterval(nextSlide, 5000);
         return () => clearInterval(interval);
-    }, []);
+    }, [images]);
 
     const navigateToSeller = (e) => {
         e.preventDefault();
-        // navigate to the seller's profile once it's implemented
+        // Navigate to the seller's profile once it's implemented
     };
 
-    const makeAnOffer= () => {
+    const makeAnOffer = () => {
         // Add the product to the cart
     };
 
+    // Don't render anything until the component is mounted to avoid SSR issues
+    if (!isMounted) return null;
+
     return (
-        <body style={{ backgroundColor: "#f7fafc" }} className="container mx-auto px-4 py-8 bg-gray-100">
+        <div className="container mx-auto px-4 py-8 bg-gray-100">
             <div className="flex flex-col md:flex-row gap-8">
                 {/* Left Side - Product Info and Gallery */}
                 <div className="w-full md:w-1/2 bg-white p-6 rounded-lg shadow-md border border-gray-200">
@@ -182,13 +186,11 @@ export default function Product() {
 
                         {/* Dots Navigation */}
                         <div className="flex justify-center mt-4 space-x-2">
-                            {images.map((_, index) => (
+                            {images.length != 0 && images.map((_, index) => (
                                 <button
                                     key={index}
                                     onClick={() => setCurrentIndex(index)}
-                                    className={`w-3 h-3 rounded-full ${
-                                        currentIndex === index ? "bg-gray-200" : "bg-gray-400"
-                                    }`}
+                                    className={`w-3 h-3 rounded-full ${currentIndex === index ? "bg-gray-200" : "bg-gray-400"}`}
                                 ></button>
                             ))}
                         </div>
@@ -214,7 +216,7 @@ export default function Product() {
                         <span className="text-3xl font-bold text-gray-800">
                             ${product && product.price?.toFixed(2)}
                         </span>
-                        
+
                         <div className="flex gap-4 mt-4">
                             <button
                                 onClick={makeAnOffer}
@@ -222,7 +224,7 @@ export default function Product() {
                             >
                                 Make an Offer
                             </button>
-                            
+
                             <button
                                 onClick={makeAnOffer}
                                 className="bg-red-600 text-white px-6 py-2 text-medium font-medium rounded-lg shadow hover:bg-red-700 transition-all flex-shrink-1 whitespace-nowrap"
@@ -231,7 +233,7 @@ export default function Product() {
                             </button>
                         </div>
                     </div>
-                    
+
                     {/* Seller Info */}
                     <div className="mt-2 text-lg">
                         <div>
@@ -262,7 +264,7 @@ export default function Product() {
                 <p className="text-gray-700">
                     Check out similar products
                 </p>
-                
+
                 {/* Link to Seller's Other Products */}
                 <a
                     onClick={navigateToSeller} // Assume you have a function to handle this navigation
@@ -271,6 +273,6 @@ export default function Product() {
                 </a>
             </div>
 
-        </body>
+        </div>
     )
 }
