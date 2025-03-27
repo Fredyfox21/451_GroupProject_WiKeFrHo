@@ -1,5 +1,6 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import 'flowbite/dist/flowbite.min.js'; 
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
