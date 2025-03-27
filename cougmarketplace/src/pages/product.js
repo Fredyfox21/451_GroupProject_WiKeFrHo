@@ -265,12 +265,7 @@ export default function Product() {
                     Check out similar products
                 </p>
 
-                {/* Link to Seller's Other Products */}
-                <a
-                    onClick={navigateToSeller} // Assume you have a function to handle this navigation
-                    className="text-red-600 hover:underline cursor-pointer mt-2"
-                >
-                </a>
+                {/* Add similar products here */}
             </div>
 
         </div>
