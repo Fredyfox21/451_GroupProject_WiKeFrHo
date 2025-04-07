@@ -66,7 +66,6 @@ export default function Home() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [tagDropdownOpen]);
-
   // Fetch products, tags, and images
   useEffect(() => {
     const fetchProducts = async () => {
@@ -138,13 +137,17 @@ export default function Home() {
 
 
   const goToHome = () => {
-      router.push("/");
+    router.push("/");
   };
 
   const goToProduct = (id) => {
     router.push(`/product?id=${id}`);
   };  
 
+
+  const goToUser = () =>{
+    router.push(`/profile`)
+  };
 
   return (
     <div className="MainPage">
@@ -180,7 +183,9 @@ export default function Home() {
 
           <div className="Logout flex justify-center items-center w-1/2 bg-red-800 hover:bg-red-900 rounded">
           
-          <button className="text-base text-center text-white">Edit Profile</button>
+          <button 
+            onClick={goToUser}
+           className="text-base text-center text-white">Edit Profile</button>
 
           </div>
 
