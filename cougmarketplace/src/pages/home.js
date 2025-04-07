@@ -189,6 +189,12 @@ export default function Home() {
 
           </div>
 
+          <button onClick={() => router.push('/createProduct')} className="text-base text-center text-white">Create Product</button>
+          
+          <div>
+
+          </div>
+
         </div>
         </div>
 
