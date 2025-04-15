@@ -3,8 +3,8 @@ import { supabase } from '../utils/supabase';
 import { useRouter } from 'next/router';
 import Image from "next/image";
 
+// the code is a decent bit messy because I had an error where I was trying everything under the sun to fix it 
 export default function CreateProduct() {
-    const [productID, setProductID] = useState(null);
     const [itemName, setItemName] = useState(null);
     const [itemDescription, setItemDescription] = useState(null);
     const [itemPrice, setItemPrice] = useState(null);
@@ -15,9 +15,19 @@ export default function CreateProduct() {
     const [itemImage2Preview, setItemImage2Preview] = useState(null);
     const [itemImage3, setItemImage3] = useState(null);
     const [itemImage3Preview, setItemImage3Preview] = useState(null);
-
-    const [itemTags, setItemTags] = useState(null);
     const [itemSeller, setItemSeller] = useState(null);
+
+    // I know this sucks, but I don't have the time to learn how to make it better right now
+    const [itemTag1, setTag1] = useState(null);
+    const [itemTag2, setTag2] = useState(null);
+    const [itemTag3, setTag3] = useState(null);
+    const [itemTag4, setTag4] = useState(null);
+    const [itemTag5, setTag5] = useState(null);
+    const [itemTag6, setTag6] = useState(null);
+    const [itemTag7, setTag7] = useState(null);
+    const [itemTag8, setTag8] = useState(null);
+    const [itemTag9, setTag9] = useState(null);
+    const [itemTag10, setTag10] = useState(null);
 
     const router = useRouter();
 
@@ -59,31 +69,29 @@ export default function CreateProduct() {
             ])
             .select();
           
-          if (productInsertError) {
+        if (productInsertError) {
             console.error("Error inserting product data:", productInsertError);
             return;
-          }
+        }
 
                    
-          const insertedProduct = productInsertData?.[0];
-          setProductID(insertedProduct.product_id)
-
+        const insertedProduct = productInsertData?.[0];
+        //   setProductID(insertedProduct.product_id)
+        const productId = insertedProduct.product_id;
      
 
-          if (!insertedProduct?.product_id) {
+        if (!insertedProduct?.product_id) {
             console.error("No product ID returned");
             return;
-          }
+        }
 
 
         
         if (itemImageCover) {
-            let imageUrl = null;
-            console.log("In Image Cover")
             // first add image to storage
             const { data, error } = await supabase.storage
                 .from('product-images') // Bucket name
-                .upload(`${itemName}ImageCover-${Date.now()}-`, itemImageCover); 
+                .upload(`${itemName}ImageCover-${Date.now()}`, itemImageCover); 
 
             if (error) {
                 console.error('Error uploading image:', error);
@@ -93,29 +101,38 @@ export default function CreateProduct() {
 
             // Get the public URL of the uploaded image
             if (data?.path) {
+
                 const { data: publicData } = supabase.storage
-                .from('product-images')
-                .getPublicUrl(data.path);
-                imageUrl = publicData.publicUrl;
+                    .from('product-images')
+                    .getPublicUrl(data.path);
+                console.log("Data: ",data)
+                console.log("Public Data: ", publicData)
+                console.log("Public Data.URL: ", publicData.publicUrl)
+                const imageUrl = publicData.publicUrl;
+                console.log("Image URL: ", imageUrl)
+
+                console.log("productID: ", productId)
+                console.log("imageURL: ", imageUrl)
+                console.log("itemName: ", itemName)
+    
+      
+
+
+                const { error: insertError } = await supabase.from("images").insert([
+                    {
+                        product_id: productId,
+                        image: imageUrl,
+                        name: itemName,
+                        isCover: true,
+                    },
+                ]);
+    
+                if (insertError) {
+                    console.error('Error uploading to image table', insertError)
+                }
             }
 
-            console.log("productID: ", productID)
-            console.log("imageURL: ", imageUrl)
-            console.log("itemName: ", itemName)
-
-
-            const { error: insertError } = await supabase.from('image').insert([
-                {
-                    product_id: productID,
-                    image: imageUrl,
-                    name: itemName,      
-                    isCover: true,
-                },
-            ]);
-
-            if (insertError) {
-                console.error('Error uploading to image table', insertError)
-            }
+  
         }
 
         if (itemImage2) {
@@ -140,13 +157,13 @@ export default function CreateProduct() {
                 imageUrl = publicData.publicUrl;
             }
 
-            console.log("productID: ", productID)
+            console.log("productID: ", productId)
             console.log("imageURL: ", imageUrl)
             console.log("itemName: ", itemName)
 
-            const { error: insertError } = await supabase.from('image').insert([
+            const { error: insertError } = await supabase.from("images").insert([
                 {
-                    product_id: productID,
+                    product_id: productId,
                     image: imageUrl,
                     name: itemName,      
                     isCover: false,
@@ -180,13 +197,13 @@ export default function CreateProduct() {
                 imageUrl = publicData.publicUrl;
             }
 
-            console.log("productID: ", productID)
+            console.log("productID: ", productId)
             console.log("imageURL: ", imageUrl)
             console.log("itemName: ", itemName)
 
-            const { error: insertError } = await supabase.from('image').insert([
+            const { error: insertError } = await supabase.from("images").insert([
                 {
-                    product_id: productID,
+                    product_id: productId,
                     image: imageUrl,
                     name: itemName,      
                     isCover: false,
@@ -197,9 +214,96 @@ export default function CreateProduct() {
                 console.error('Error uploading to image table', insertError)
             }
         }
+
+        if (itemTag1) {
+            const {error: insertError} = await supabase.from("tag").insert([
+                {
+                    product_id: productId,
+                    name: itemTag1
+                }
+            ]);
+        }
+
+        if (itemTag2) {
+            const {error: insertError} = await supabase.from("tag").insert([
+                {
+                    product_id: productId,
+                    name: itemTag2
+                }
+            ]);
+        }
+
+        if (itemTag3) {
+            const {error: insertError} = await supabase.from("tag").insert([
+                {
+                    product_id: productId,
+                    name: itemTag3
+                }
+            ]);
+        }
         
+        if (itemTag4) {
+            const {error: insertError} = await supabase.from("tag").insert([
+                {
+                    product_id: productId,
+                    name: itemTag4
+                }
+            ]);
+        }
 
+        if (itemTag5) {
+            const {error: insertError} = await supabase.from("tag").insert([
+                {
+                    product_id: productId,
+                    name: itemTag5
+                }
+            ]);
+        }
+  
+        if (itemTag6) {
+            const {error: insertError} = await supabase.from("tag").insert([
+                {
+                    product_id: productId,
+                    name: itemTag6
+                }
+            ]);
+        }
 
+        if (itemTag7) {
+            const {error: insertError} = await supabase.from("tag").insert([
+                {
+                    product_id: productId,
+                    name: itemTag7
+                }
+            ]);
+        }
+
+        if (itemTag8) {
+            const {error: insertError} = await supabase.from("tag").insert([
+                {
+                    product_id: productId,
+                    name: itemTag8
+                }
+            ]);
+        }
+
+        if (itemTag9) {
+            const {error: insertError} = await supabase.from("tag").insert([
+                {
+                    product_id: productId,
+                    name: itemTag9
+                }
+            ]);
+        }
+
+        if (itemTag10) {
+            const {error: insertError} = await supabase.from("tag").insert([
+                {
+                    product_id: productId,
+                    name: itemTag10
+                }
+            ]);
+        }
     };
 
 
@@ -241,16 +345,17 @@ export default function CreateProduct() {
                         alt="ItemImageCover"
                         onChange={(e) => {
                             const file = e.target.files?.[0];
-                            //setItemImageCover(file);
-                            setItemImageCover(
+                            setItemImageCover(file);
+                            setItemImageCoverPreview(
                                 file ? URL.createObjectURL(file) : undefined);
                             }}  
                         required
                         />
 
-                    {itemImageCover && (
+
+                    {itemImageCoverPreview && (
                         <Image
-                            src = {itemImageCover}
+                            src = {itemImageCoverPreview}
                             width = {400}
                             height = {400}
                             />    
@@ -298,6 +403,67 @@ export default function CreateProduct() {
                             />    
                         )
                     }
+
+                    <input
+                        placeholder="Tag 1"
+                        value = {itemTag1}
+                        onChange={(e) => setTag1(e.target.value)}
+                        />
+
+                    <input
+                        placeholder="Tag 2"
+                        value = {itemTag2}
+                        onChange={(e) => setTag2(e.target.value)}
+                        />
+
+                    <input
+                        placeholder="Tag 3"
+                        value = {itemTag3}
+                        onChange={(e) => setTag3(e.target.value)}
+                        />
+
+                    <input
+                        placeholder="Tag 4"
+                        value = {itemTag4}
+                        onChange={(e) => setTag4(e.target.value)}
+                        />
+
+                    <input
+                        placeholder="Tag 5"
+                        value = {itemTag5}
+                        onChange={(e) => setTag5(e.target.value)}
+                        />
+
+                    <input
+                        placeholder="Tag 6"
+                        value = {itemTag6}
+                        onChange={(e) => setTag6(e.target.value)}
+                        />
+                    
+                    <input
+                        placeholder="Tag 7"
+                        value = {itemTag7}
+                        onChange={(e) => setTag7(e.target.value)}
+                        />
+                    
+                    <input
+                        placeholder="Tag 8"
+                        value = {itemTag8}
+                        onChange={(e) => setTag8(e.target.value)}
+                        />
+
+                    <input
+                        placeholder="Tag 9"
+                        value = {itemTag9}
+                        onChange={(e) => setTag9(e.target.value)}
+                        />
+
+                    <input
+                        placeholder="Tag 10"
+                        value = {itemTag10}
+                        onChange={(e) => setTag10(e.target.value)}
+                        />
+
                     <button onClick={() => handleSubmit()}>SUBMIT</button>
             </div>
 
