@@ -187,7 +187,7 @@ export default function Message()
     if (!isMounted) return null;
 
     return (
-        <div className="bg-[url('/Images/background.jpg')]">
+        <div className="bg-[url('/Images/dacoogasbg.png')] min-h-screen">
             <div className="flex items-center justify-between flex-wrap gap-4 p-4 bg-gray-100 border-b border-gray-200 rounded-2xl shadow-md w-full max-w-[700px] mx-auto">
                 {/* Left profile image */}
                 <img

@@ -15,6 +15,7 @@ export default function Home() {
   const [tagsMap, setTagsMap] = useState({});
   const [tagQuery, setTagQuery]= useState('');
   const [tagDropdownOpen, setTagDropdownOpen] = useState(false);
+  const [unreadMessagesm , setUnreadMessages] = useState(0);
   const tagDropdownRef = useRef(null)
   const router = useRouter();
 
@@ -36,6 +37,47 @@ export default function Home() {
 
     checkUser();  
   }, [])
+
+  // Get unread messages
+  useEffect(() => {
+    const fetchUnreadMessages = async () => {
+      if (!user) return; // Wait for user to be set
+
+      const { data: chats, error: chatError } = await supabase
+        .from('chat')
+        .select('chat_id')
+        .or(`user_1.eq.${user.id},user_2.eq.${user.id}`);
+
+      if (chatError) {
+        console.error("Error fetching chats:", chatError);
+        return;
+      }
+
+      const chatIds = chats.map(chat => chat.chat_id);
+
+      if (chatIds.length === 0) {
+        console.log("No chats found for user.");
+        return;
+      }
+
+      // Step 2: Fetch messages not from user and not yet viewed
+      const { data: messages, error: messageError } = await supabase
+        .from('message')
+        .select('*')
+        .in('chat_id', chatIds)
+        .neq('sender_id', user.id)
+        .eq('viewed', false);
+
+      if (messageError) {
+        console.error("Error fetching messages:", messageError);
+      } else {
+        console.log("Unviewed messages from other users:", messages);
+      }
+      setUnreadMessages(messages.length); // Set the unread messages count
+    }
+    fetchUnreadMessages();
+
+    }, [user]);
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -175,13 +217,13 @@ export default function Home() {
 
         <div className="Logout flex flex-col gap-2 w-full  justify-center items-center">
 
-          <div className="Logout flex justify-center items-center w-1/2 bg-red-800 hover:bg-red-900 rounded ">
+          <div className="Logout flex justify-center items-center w-3/5 bg-red-800 hover:bg-red-900 rounded ">
           
           <button onClick={handleLogout} className=" text-base text-center text-white ">Log out</button>
 
           </div>
 
-          <div className="Logout flex justify-center items-center w-1/2 bg-red-800 hover:bg-red-900 rounded">
+          <div className="Logout flex justify-center items-center w-3/5 bg-red-800 hover:bg-red-900 rounded">
           
           <button 
             onClick={goToUser}
@@ -189,10 +231,8 @@ export default function Home() {
 
           </div>
 
-          <div className="Logout flex justify-center items-center w-1/2 bg-red-800 hover:bg-red-900 rounded">
-        
-          <button onClick={() => router.push('/createProduct')} className="text-base text-center text-white">Create Product</button>
-          
+          <div className="Logout flex justify-center items-center w-3/5 bg-red-800 hover:bg-red-900 rounded">
+            <button onClick={() => router.push('/createProduct')} className="text-base text-center text-white">Create Product</button>
           </div>
           
           {/* <div className="Logout flex justify-center items-center w-1/2 bg-red-800 hover:bg-red-900 rounded">
@@ -201,6 +241,10 @@ export default function Home() {
 
 
           </div> */}
+
+          <div className="Logout flex justify-center items-center w-3/5 bg-red-800 hover:bg-red-900 rounded">
+            <button onClick={() => router.push('/chats')} className="text-base text-center text-white">Messages ({unreadMessagesm} unread) </button>
+          </div>
 
         </div>
         </div>
