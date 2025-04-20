@@ -12,10 +12,26 @@ export default function Product() {
     const [tags, setTags] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isMounted, setIsMounted] = useState(false); // For handling hydration
+    const [user, setUser] = useState(null); // For handling user session
 
     // Hydration check to ensure component only renders client-side
     useEffect(() => {
         setIsMounted(true);
+    }, []);
+
+    // Get the user session on component mount
+    useEffect(() => {
+        const checkUser = async () => {
+            const { data, error } = await supabase.auth.getSession()
+            if (error) {
+                console.error("Error fetching user:", error?.message);
+            } else if (!data?.session?.user) {
+                console.error("Error fetching user:", error?.message);
+            } else {
+                setUser(data.session.user)
+            }
+        };
+        checkUser();
     }, []);
 
     // Fetch images and data for the product
@@ -122,6 +138,11 @@ export default function Product() {
 
     const makeAnOffer = () => {
         // Add the product to the cart
+        if (product.seller_id == null) return;
+
+        if (user && product.seller_id == user.id) return;
+
+        router.push('/message?messangerId=' + product.seller_id);
     };
 
     // Don't render anything until the component is mounted to avoid SSR issues
