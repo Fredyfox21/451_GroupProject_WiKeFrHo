@@ -189,9 +189,16 @@ export default function Home() {
 
           </div>
 
+          <div className="Logout flex justify-center items-center w-1/2 bg-red-800 hover:bg-red-900 rounded">
+        
           <button onClick={() => router.push('/createProduct')} className="text-base text-center text-white">Create Product</button>
           
-          <div>
+          </div>
+          
+          <div className="Logout flex justify-center items-center w-1/2 bg-red-800 hover:bg-red-900 rounded">
+
+          <button onClick={() => router.push('/viewProfile')} className="text-base text-center text-white">View Profile</button>
+
 
           </div>
 
@@ -371,7 +378,7 @@ export default function Home() {
             </div>
           ))}
         </div>
-      </div>
+      </div> 
 
     </div>
   );
