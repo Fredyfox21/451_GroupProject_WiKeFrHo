@@ -3,470 +3,178 @@ import { supabase } from '../utils/supabase';
 import { useRouter } from 'next/router';
 import Image from "next/image";
 
-// the code is a decent bit messy because I had an error where I was trying everything under the sun to fix it 
 export default function CreateProduct() {
-    const [itemName, setItemName] = useState(null);
-    const [itemDescription, setItemDescription] = useState(null);
-    const [itemPrice, setItemPrice] = useState(null);
-    const [itemQty, setItemQty] = useState(null);
-    const [itemImageCover, setItemImageCover] = useState(null);
-    const [itemImageCoverPreview, setItemImageCoverPreview] = useState(null);
-    const [itemImage2, setItemImage2] = useState(null);
-    const [itemImage2Preview, setItemImage2Preview] = useState(null);
-    const [itemImage3, setItemImage3] = useState(null);
-    const [itemImage3Preview, setItemImage3Preview] = useState(null);
-    const [itemSeller, setItemSeller] = useState(null);
+  const router = useRouter();
 
-    // I know this sucks, but I don't have the time to learn how to make it better right now
-    const [itemTag1, setTag1] = useState(null);
-    const [itemTag2, setTag2] = useState(null);
-    const [itemTag3, setTag3] = useState(null);
-    const [itemTag4, setTag4] = useState(null);
-    const [itemTag5, setTag5] = useState(null);
-    const [itemTag6, setTag6] = useState(null);
-    const [itemTag7, setTag7] = useState(null);
-    const [itemTag8, setTag8] = useState(null);
-    const [itemTag9, setTag9] = useState(null);
-    const [itemTag10, setTag10] = useState(null);
+  const [itemName, setItemName] = useState('');
+  const [itemDescription, setItemDescription] = useState('');
+  const [itemPrice, setItemPrice] = useState('');
+  const [itemQty, setItemQty] = useState('');
+  const [itemSeller, setItemSeller] = useState(null);
 
-    const router = useRouter();
+  const [itemImageCover, setItemImageCover] = useState(null);
+  const [itemImage2, setItemImage2] = useState(null);
+  const [itemImage3, setItemImage3] = useState(null);
 
-    useEffect(() => {
-        const checkUser = async () => {
-          const { data, error} = await supabase.auth.getSession()
-    
-          if (error) {
-            // Safely check for error before accessing message
-            console.error("Error fetching user:", error?.message);
-            router.push("/login");
-          } else if (!data?.session?.user) {
-            router.push("/login"); // If no user in session, redirect to login
-          } else {
-            setItemSeller(data.session.user.id); // The user object is in data.session.user - UNCOMMENT THIS WHEN DONE
-          }
-    
-        };
-        checkUser();
-      }, []); // something in [] means it runs when that happens, nothing in it means it's the first thing called 
+  const [itemImageCoverPreview, setItemImageCoverPreview] = useState(null);
+  const [itemImage2Preview, setItemImage2Preview] = useState(null);
+  const [itemImage3Preview, setItemImage3Preview] = useState(null);
 
-      // -------------------------------------
+  const [tags, setTags] = useState(Array(10).fill(''));
 
-    const handleSubmit = async (e) => {
-        //e.preventDefault();
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data, error } = await supabase.auth.getSession();
+      if (error || !data?.session?.user) {
+        router.push("/login");
+      } else {
+        setItemSeller(data.session.user.id);
+      }
+    };
+    checkUser();
+  }, []);
 
-        const currentDate = new Date().toISOString();
-        const { data: productInsertData, error: productInsertError } = await supabase
-            .from("product")
-            .insert([
-              {
-                name: itemName,
-                price: itemPrice,
-                seller_id: itemSeller,
-                Qty: itemQty,
-                description: itemDescription,
-                postdate: currentDate
-              }
-            ])
-            .select();
-          
-        if (productInsertError) {
-            console.error("Error inserting product data:", productInsertError);
-            return;
-        }
+  const handleTagChange = (index, value) => {
+    const newTags = [...tags];
+    newTags[index] = value;
+    setTags(newTags);
+  };
 
-                   
-        const insertedProduct = productInsertData?.[0];
-        //   setProductID(insertedProduct.product_id)
-        const productId = insertedProduct.product_id;
-     
+  const handleSubmit = async () => {
+    const currentDate = new Date().toISOString();
 
-        if (!insertedProduct?.product_id) {
-            console.error("No product ID returned");
-            return;
-        }
+    const { data: productData, error: productInsertError } = await supabase
+      .from("product")
+      .insert([{
+        name: itemName,
+        price: itemPrice,
+        seller_id: itemSeller,
+        Qty: itemQty,
+        description: itemDescription,
+        postdate: currentDate
+      }])
+      .select();
 
+    if (productInsertError) {
+      console.error("Error inserting product:", productInsertError);
+      return;
+    }
 
-        
-        if (itemImageCover) {
-            // first add image to storage
-            const { data, error } = await supabase.storage
-                .from('product-images') // Bucket name
-                .upload(`${itemName}ImageCover-${Date.now()}`, itemImageCover); 
+    const productId = productData?.[0]?.product_id;
+    if (!productId) return;
 
-            if (error) {
-                console.error('Error uploading image:', error);
-                //setError('Failed to upload image.');
-                return;
-            }
+    const uploadImage = async (image, isCover = false, label = "") => {
+      const fileName = `${itemName}-${label}-${Date.now()}`;
+      const { data, error } = await supabase
+        .storage
+        .from('product-images')
+        .upload(fileName, image);
 
-            // Get the public URL of the uploaded image
-            if (data?.path) {
+      if (error) return;
 
-                const { data: publicData } = supabase.storage
-                    .from('product-images')
-                    .getPublicUrl(data.path);
-                console.log("Data: ",data)
-                console.log("Public Data: ", publicData)
-                console.log("Public Data.URL: ", publicData.publicUrl)
-                const imageUrl = publicData.publicUrl;
-                console.log("Image URL: ", imageUrl)
+      const { data: publicData } = supabase
+        .storage
+        .from('product-images')
+        .getPublicUrl(data.path);
 
-                console.log("productID: ", productId)
-                console.log("imageURL: ", imageUrl)
-                console.log("itemName: ", itemName)
-    
-      
+      const imageUrl = publicData?.publicUrl;
 
-
-                const { error: insertError } = await supabase.from("images").insert([
-                    {
-                        product_id: productId,
-                        image: imageUrl,
-                        name: itemName,
-                        isCover: true,
-                    },
-                ]);
-    
-                if (insertError) {
-                    console.error('Error uploading to image table', insertError)
-                }
-            }
-
-  
-        }
-
-        if (itemImage2) {
-            let imageUrl = null;
-            // console.log("In Image Cover")
-            // first add image to storage
-            const { data, error } = await supabase.storage
-                .from('product-images') // Bucket name
-                .upload(`${itemName}Image2-${Date.now()}-`, itemImage2); 
-
-            if (error) {
-                console.error('Error uploading image:', error);
-                //setError('Failed to upload image.');
-                return;
-            }
-
-            // Get the public URL of the uploaded image
-            if (data?.path) {
-                const { data: publicData } = supabase.storage
-                .from('product-images')
-                .getPublicUrl(data.path);
-                imageUrl = publicData.publicUrl;
-            }
-
-            console.log("productID: ", productId)
-            console.log("imageURL: ", imageUrl)
-            console.log("itemName: ", itemName)
-
-            const { error: insertError } = await supabase.from("images").insert([
-                {
-                    product_id: productId,
-                    image: imageUrl,
-                    name: itemName,      
-                    isCover: false,
-                },
-            ]);
-
-            if (insertError) {
-                console.error('Error uploading to image table', insertError)
-            }
-        }
-
-        if (itemImage3) {
-            let imageUrl = null;
-            // console.log("In Image Cover")
-            // first add image to storage
-            const { data, error } = await supabase.storage
-                .from('product-images') // Bucket name
-                .upload(`${itemName}Image3-${Date.now()}-`, itemImage3); 
-
-            if (error) {
-                console.error('Error uploading image:', error);
-                //setError('Failed to upload image.');
-                return;
-            }
-
-            // Get the public URL of the uploaded image
-            if (data?.path) {
-                const { data: publicData } = supabase.storage
-                .from('product-images')
-                .getPublicUrl(data.path);
-                imageUrl = publicData.publicUrl;
-            }
-
-            console.log("productID: ", productId)
-            console.log("imageURL: ", imageUrl)
-            console.log("itemName: ", itemName)
-
-            const { error: insertError } = await supabase.from("images").insert([
-                {
-                    product_id: productId,
-                    image: imageUrl,
-                    name: itemName,      
-                    isCover: false,
-                },
-            ]);
-
-            if (insertError) {
-                console.error('Error uploading to image table', insertError)
-            }
-        }
-
-        if (itemTag1) {
-            const {error: insertError} = await supabase.from("tag").insert([
-                {
-                    product_id: productId,
-                    name: itemTag1
-                }
-            ]);
-        }
-
-        if (itemTag2) {
-            const {error: insertError} = await supabase.from("tag").insert([
-                {
-                    product_id: productId,
-                    name: itemTag2
-                }
-            ]);
-        }
-
-        if (itemTag3) {
-            const {error: insertError} = await supabase.from("tag").insert([
-                {
-                    product_id: productId,
-                    name: itemTag3
-                }
-            ]);
-        }
-        
-        if (itemTag4) {
-            const {error: insertError} = await supabase.from("tag").insert([
-                {
-                    product_id: productId,
-                    name: itemTag4
-                }
-            ]);
-        }
-
-        if (itemTag5) {
-            const {error: insertError} = await supabase.from("tag").insert([
-                {
-                    product_id: productId,
-                    name: itemTag5
-                }
-            ]);
-        }
-  
-        if (itemTag6) {
-            const {error: insertError} = await supabase.from("tag").insert([
-                {
-                    product_id: productId,
-                    name: itemTag6
-                }
-            ]);
-        }
-
-        if (itemTag7) {
-            const {error: insertError} = await supabase.from("tag").insert([
-                {
-                    product_id: productId,
-                    name: itemTag7
-                }
-            ]);
-        }
-
-        if (itemTag8) {
-            const {error: insertError} = await supabase.from("tag").insert([
-                {
-                    product_id: productId,
-                    name: itemTag8
-                }
-            ]);
-        }
-
-        if (itemTag9) {
-            const {error: insertError} = await supabase.from("tag").insert([
-                {
-                    product_id: productId,
-                    name: itemTag9
-                }
-            ]);
-        }
-
-        if (itemTag10) {
-            const {error: insertError} = await supabase.from("tag").insert([
-                {
-                    product_id: productId,
-                    name: itemTag10
-                }
-            ]);
-        }
+      await supabase.from("images").insert([{
+        product_id: productId,
+        image: imageUrl,
+        name: itemName,
+        isCover: isCover,
+      }]);
     };
 
+    if (itemImageCover) await uploadImage(itemImageCover, true, "Cover");
+    if (itemImage2) await uploadImage(itemImage2, false, "Image2");
+    if (itemImage3) await uploadImage(itemImage3, false, "Image3");
 
-    return (
-            <div className="bg-gray-400 bg-opacity-75 p-8 rounded-lg shadow-lg w-96 text-white">
-                <h1 className="text-red-700 text-4xl font-bold text-center mb-6" style={{ fontFamily: 'Orbitron' }}>Product Creation</h1>
-                    <input
-                        placeholder="Item Name"
-                        value={itemName}
-                        onChange={(e) => setItemName(e.target.value)}
-                        required
-                        />
-                    
-                    <textarea
-                        placeholder="Item Description"
-                        className="descSize"  // Apply a custom class
-                        value={itemDescription}
-                        onChange={(e) => setItemDescription(e.target.value)}
-                        required
-                    />
-                    
-                    <input 
-                        type="number"
-                        placeholder="Item Price"
-                        value={itemPrice}
-                        onChange={(e) => setItemPrice(e.target.value)}
-                        required
-                        />
-                    <input 
-                        type="number"
-                        placeholder="Item Quantity"
-                        value={itemQty}
-                        onChange={(e) => setItemQty(e.target.value)}
-                        required
-                        />
-                    <input 
-                        type="file"
-                        accept ="image/*"
-                        alt="ItemImageCover"
-                        onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            setItemImageCover(file);
-                            setItemImageCoverPreview(
-                                file ? URL.createObjectURL(file) : undefined);
-                            }}  
-                        required
-                        />
+    for (let tag of tags) {
+      if (tag?.trim()) {
+        await supabase.from("tag").insert([{ product_id: productId, name: tag }]);
+      }
+    }
 
+    router.push("/"); // optional redirect after submit
+  };
 
-                    {itemImageCoverPreview && (
-                        <Image
-                            src = {itemImageCoverPreview}
-                            width = {400}
-                            height = {400}
-                            />    
-                        )
-                    }
+  return (
+    <div className="min-h-screen flex justify-center items-center bg-gray-100 py-10">
+      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-2xl space-y-8">
 
-                    <input 
-                        type="file"
-                        accept ="image/*"
-                        alt="ItemImage2"
-                        onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            setItemImage2(file);
-                            setItemImage2Preview(
-                                file ? URL.createObjectURL(file) : undefined);
-                            }}  
-                        />
+        <h1 className="text-3xl font-bold text-center text-red-700 font-orbitron">Create New Product</h1>
 
-                    {itemImage2Preview && (
-                        <Image
-                            src = {itemImage2Preview}
-                            width = {400}
-                            height = {400}
-                            />    
-                        )
-                    }
+        {/* Section: Product Details */}
+        <div>
+          <h2 className="text-xl font-semibold mb-4">Product Details</h2>
+          <div className="space-y-4">
+            <input type="text" placeholder="Item Name" value={itemName}
+              onChange={(e) => setItemName(e.target.value)} className="w-full px-4 py-2 border rounded" />
+            <textarea placeholder="Item Description" value={itemDescription}
+              onChange={(e) => setItemDescription(e.target.value)} className="w-full px-4 py-2 border rounded resize-none h-24" />
+            <input type="number" placeholder="Price" value={itemPrice}
+              onChange={(e) => setItemPrice(e.target.value)} className="w-full px-4 py-2 border rounded" />
+            <input type="number" placeholder="Quantity" value={itemQty}
+              onChange={(e) => setItemQty(e.target.value)} className="w-full px-4 py-2 border rounded" />
+          </div>
+        </div>
 
-                    <input 
-                        type="file"
-                        accept ="image/*"
-                        alt="ItemImage3"
-                        onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            setItemImage3(file);
-                            setItemImage3Preview(
-                                file ? URL.createObjectURL(file) : undefined);
-                            }}  
-                        />
+        {/* Section: Images */}
+        <div>
+          <h2 className="text-xl font-semibold mb-4">Images</h2>
+          <div className="space-y-4">
+            <label className="block font-medium">Cover Image</label>
+            <input type="file" accept="image/*" onChange={(e) => {
+              const file = e.target.files?.[0];
+              setItemImageCover(file);
+              setItemImageCoverPreview(file ? URL.createObjectURL(file) : null);
+            }} />
+            {itemImageCoverPreview && <Image src={itemImageCoverPreview} alt="Cover" width={200} height={200} className="rounded" />}
 
-                    {itemImage3Preview && (
-                        <Image
-                            src = {itemImage3Preview}
-                            width = {400}
-                            height = {400}
-                            />    
-                        )
-                    }
+            <label className="block font-medium">Image 2</label>
+            <input type="file" accept="image/*" onChange={(e) => {
+              const file = e.target.files?.[0];
+              setItemImage2(file);
+              setItemImage2Preview(file ? URL.createObjectURL(file) : null);
+            }} />
+            {itemImage2Preview && <Image src={itemImage2Preview} alt="Image 2" width={200} height={200} className="rounded" />}
 
-                    <input
-                        placeholder="Tag 1"
-                        value = {itemTag1}
-                        onChange={(e) => setTag1(e.target.value)}
-                        />
+            <label className="block font-medium">Image 3</label>
+            <input type="file" accept="image/*" onChange={(e) => {
+              const file = e.target.files?.[0];
+              setItemImage3(file);
+              setItemImage3Preview(file ? URL.createObjectURL(file) : null);
+            }} />
+            {itemImage3Preview && <Image src={itemImage3Preview} alt="Image 3" width={200} height={200} className="rounded" />}
+          </div>
+        </div>
 
-                    <input
-                        placeholder="Tag 2"
-                        value = {itemTag2}
-                        onChange={(e) => setTag2(e.target.value)}
-                        />
+        {/* Section: Tags */}
+        <div>
+          <h2 className="text-xl font-semibold mb-4">Tags (Optional)</h2>
+          <div className="grid grid-cols-2 gap-4">
+            {tags.map((tag, index) => (
+              <input
+                key={index}
+                type="text"
+                placeholder={`Tag ${index + 1}`}
+                value={tag}
+                onChange={(e) => handleTagChange(index, e.target.value)}
+                className="w-full px-3 py-2 border rounded"
+              />
+            ))}
+          </div>
+        </div>
 
-                    <input
-                        placeholder="Tag 3"
-                        value = {itemTag3}
-                        onChange={(e) => setTag3(e.target.value)}
-                        />
-
-                    <input
-                        placeholder="Tag 4"
-                        value = {itemTag4}
-                        onChange={(e) => setTag4(e.target.value)}
-                        />
-
-                    <input
-                        placeholder="Tag 5"
-                        value = {itemTag5}
-                        onChange={(e) => setTag5(e.target.value)}
-                        />
-
-                    <input
-                        placeholder="Tag 6"
-                        value = {itemTag6}
-                        onChange={(e) => setTag6(e.target.value)}
-                        />
-                    
-                    <input
-                        placeholder="Tag 7"
-                        value = {itemTag7}
-                        onChange={(e) => setTag7(e.target.value)}
-                        />
-                    
-                    <input
-                        placeholder="Tag 8"
-                        value = {itemTag8}
-                        onChange={(e) => setTag8(e.target.value)}
-                        />
-
-                    <input
-                        placeholder="Tag 9"
-                        value = {itemTag9}
-                        onChange={(e) => setTag9(e.target.value)}
-                        />
-
-                    <input
-                        placeholder="Tag 10"
-                        value = {itemTag10}
-                        onChange={(e) => setTag10(e.target.value)}
-                        />
-
-                    <button onClick={() => handleSubmit()}>SUBMIT</button>
-            </div>
-
-    )
-
+        <button
+          onClick={handleSubmit}
+          className="w-full bg-red-600 text-white py-2 rounded hover:bg-red-700 transition"
+        >
+          Submit Product
+        </button>
+      </div>
+    </div>
+  );
 }

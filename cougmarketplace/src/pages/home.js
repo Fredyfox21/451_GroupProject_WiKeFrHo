@@ -191,6 +191,11 @@ export default function Home() {
     router.push(`/profile`)
   };
 
+  const goToMyProducts = () => {
+    router.push('/myProducts');
+  };  
+
+
   return (
     <div className="MainPage">
       <div className="Title and User Info flex justify-between w-full">
@@ -234,6 +239,12 @@ export default function Home() {
           <div className="Logout flex justify-center items-center w-3/5 bg-red-800 hover:bg-red-900 rounded">
             <button onClick={() => router.push('/createProduct')} className="text-base text-center text-white">Create Product</button>
           </div>
+
+          <div className="Logout flex justify-center items-center w-3/5 bg-red-800 hover:bg-red-900 rounded">
+          <button onClick={goToMyProducts} className="text-base text-center text-white">
+            My Products
+            </button>
+            </div>
           
           {/* <div className="Logout flex justify-center items-center w-1/2 bg-red-800 hover:bg-red-900 rounded">
 
