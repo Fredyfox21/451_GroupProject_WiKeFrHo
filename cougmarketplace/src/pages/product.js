@@ -2,6 +2,8 @@ import "../app/globals.css";
 import { useState, useEffect } from 'react';
 import { supabase } from '../utils/supabase';
 import { useRouter } from 'next/router';
+import Image from 'next/image';
+import WishlistButton from "@/components/WishlistButton";
 
 export default function Product() {
     const [images, setImages] = useState([]);
@@ -13,6 +15,7 @@ export default function Product() {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isMounted, setIsMounted] = useState(false); // For handling hydration
     const [user, setUser] = useState(null); // For handling user session
+    const [similarProducts, setSimilarProducts] = useState([]); // for similar products
 
     // Hydration check to ensure component only renders client-side
     useEffect(() => {
@@ -145,11 +148,71 @@ export default function Product() {
         router.push('/message?messangerId=' + product.seller_id);
     };
 
+    useEffect(() => {
+        if (tags.length === 0 || !product) return;
+    
+        const fetchSimilarProducts = async () => {
+            try {
+                const { data: similarTagEntries, error } = await supabase
+                    .from('tag')
+                    .select('product_id')
+                    .in('name', tags);
+    
+                if (error) {
+                    console.error('Error fetching similar product tags:', error.message);
+                    return;
+                }
+    
+                const relatedProductIds = [...new Set(
+                    similarTagEntries
+                        .map(entry => entry.product_id)
+                        .filter(pid => pid !== product.product_id)
+                )];
+    
+                if (relatedProductIds.length === 0) {
+                    setSimilarProducts([]);
+                    return;
+                }
+    
+                const { data: similarProductsData, error: similarProductsError } = await supabase
+                    .from('product')
+                    .select('*')
+                    .in('product_id', relatedProductIds);
+    
+                if (similarProductsError) {
+                    console.error('Error fetching similar products:', similarProductsError.message);
+                } else {
+                    setSimilarProducts(similarProductsData);
+                }
+            } catch (error) {
+                console.error('Unexpected error fetching similar products:', error.message);
+            }
+        };
+    
+        fetchSimilarProducts();
+    }, [tags, product]);
+
+
     // Don't render anything until the component is mounted to avoid SSR issues
     if (!isMounted) return null;
 
     return (
-        <div className="container mx-auto px-4 py-8 bg-gray-100">
+        
+        <div className="min-h-screen bg-cover bg-center" style={{ backgroundImage: "url('/images/pexels-boomheadshot-31139015.jpg')" }}>
+
+            <div className="inline-block p-2 bg-gray-200 rounded-full hover:bg-gray-300 absolute top-0 left-0 m-4">
+                    <button onClick={() => router.push('/home')}>
+                      <Image
+                        src="/images/washington-state-logo-png-transparent.png" 
+                        alt="HomeButton" 
+                        width={24}
+                        height={24}
+                        className="h-6 w-6"
+                      />
+                    </button>
+                  </div>
+
+            <div className="container mx-auto px-4 py-8 bg-gray">
             <div className="flex flex-col md:flex-row gap-8">
                 {/* Left Side - Product Info and Gallery */}
                 <div className="w-full md:w-1/2 bg-white p-6 rounded-lg shadow-md border border-gray-200">
@@ -246,12 +309,8 @@ export default function Product() {
                                 Make an Offer
                             </button>
 
-                            <button
-                                onClick={makeAnOffer}
-                                className="bg-red-600 text-white px-6 py-2 text-medium font-medium rounded-lg shadow hover:bg-red-700 transition-all flex-shrink-1 whitespace-nowrap"
-                            >
-                                Add to Wishlist
-                            </button>
+                            <WishlistButton user={user} product={product}/>
+
                         </div>
                     </div>
 
@@ -281,14 +340,29 @@ export default function Product() {
                 </div>
 
             </div>
-            <div className="mt-8 text-lg">
-                <p className="text-gray-700">
-                    Check out similar products
-                </p>
-
-                {/* Add similar products here */}
+            {/* This is for simialr postings */}
+            <h2 className="text-3xl font-bold text-white mb-4">Recommended Products</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mt-5">
+                {similarProducts.map((simProduct) => (
+                    <div
+                        key={simProduct.product_id}
+                        className="bg-white p-4 rounded-lg shadow hover:bg-gray-200 shadow-lg transition"
+                        onClick={() => router.push(`/product?id=${simProduct.product_id}`)}
+                    >
+                        <h3 className="text-lg font-semibold text-gray-800">
+                            {simProduct.name}
+                        </h3>
+                        <p className="text-gray-600 text-sm truncate">
+                            {simProduct.description}
+                        </p>
+                        <p className="text-red-600 font-bold mt-2">
+                            ${simProduct.price?.toFixed(2)}
+                        </p>
+                    </div>
+                ))}
             </div>
-
+            </div>
+            
         </div>
     )
 }
