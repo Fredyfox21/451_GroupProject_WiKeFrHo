@@ -102,7 +102,7 @@ export default function MyProducts() {
         <h2 className="text-2xl font-bold text-black mb-4 ml-2">My Listed Products</h2>
 
         {myProducts.length === 0 ? (
-          <p className="text-white ml-2">You haven't listed any products yet.</p>
+          <p className="text-gray ml-2">You haven't listed any products yet.</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"> {/* Reduced gap from 6 to 4 */}
             {myProducts.map(product => (
