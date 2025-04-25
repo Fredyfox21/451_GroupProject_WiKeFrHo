@@ -4,6 +4,7 @@ import { supabase } from '../utils/supabase';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
 import WishlistButton from "@/components/WishlistButton";
+import LoginPrompt from "../components/LoginPrompt";
 
 export default function Product() {
     const [images, setImages] = useState([]);
@@ -16,6 +17,7 @@ export default function Product() {
     const [isMounted, setIsMounted] = useState(false); // For handling hydration
     const [user, setUser] = useState(null); // For handling user session
     const [similarProducts, setSimilarProducts] = useState([]); // for similar products
+    const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
     // Hydration check to ensure component only renders client-side
     useEffect(() => {
@@ -140,6 +142,12 @@ export default function Product() {
     };
 
     const makeAnOffer = () => {
+        //if the current user is not logged in
+        if (!user) {
+            setShowLoginPrompt(true);
+            return;
+        }
+
         // Add the product to the cart
         if (product.seller_id == null) return;
 
@@ -200,17 +208,20 @@ export default function Product() {
         
         <div className="min-h-screen bg-cover bg-center" style={{ backgroundImage: "url('/images/pexels-boomheadshot-31139015.jpg')" }}>
 
-            <div className="inline-block p-2 bg-gray-200 rounded-full hover:bg-gray-300 absolute top-0 left-0 m-4">
-                    <button onClick={() => router.push('/home')}>
-                      <Image
-                        src="/images/washington-state-logo-png-transparent.png" 
+            <div href="/" className=" absolute top-0 left-0 m-4">
+                    <button onClick={() => router.push("/home")} className="rounded-full p-2 bg-white flex items-center justify-center">
+                        <Image
+                        src="/Images/washington-state-logo-png-transparent.png" 
                         alt="HomeButton" 
-                        width={24}
-                        height={24}
+                        layout= "fixed"
+                        width={48}
+                        height={48}
+                        quality={100}
                         className="h-6 w-6"
-                      />
+                        />
                     </button>
-                  </div>
+                        
+                    </div>
 
             <div className="container mx-auto px-4 py-8 bg-gray">
             <div className="flex flex-col md:flex-row gap-8">
@@ -311,6 +322,11 @@ export default function Product() {
 
                             <WishlistButton user={user} product={product}/>
 
+
+                            <LoginPrompt
+                                visible={showLoginPrompt}
+                            onClose={() => setShowLoginPrompt(false)}
+                            />
                         </div>
                     </div>
 

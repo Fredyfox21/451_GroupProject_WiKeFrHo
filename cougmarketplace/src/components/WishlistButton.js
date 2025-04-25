@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../utils/supabase';
+import LoginPrompt from "../components/LoginPrompt";
 
 export default function WishlistButton({ user, product }) {
-
+    const [showLoginPrompt, setShowLoginPrompt] = useState(false);
     const [isWishlisted, setIsWishlisted] = useState(false);
 
     useEffect(() => {
@@ -28,7 +29,13 @@ export default function WishlistButton({ user, product }) {
     }, [user, product]);
 
     const toggleWishlist = async () => {
-        if (!user || !product) return;
+
+        if (!user) {
+            setShowLoginPrompt(true);
+            return;
+        }
+
+        if (!product) return;
 
         const newWishlistedState = !isWishlisted;
         setIsWishlisted(newWishlistedState);
@@ -57,7 +64,7 @@ export default function WishlistButton({ user, product }) {
     };
 
     return (
-        
+        <div>
         <button
         onClick={toggleWishlist}
         className={`px-6 py-2 text-medium font-medium rounded-lg shadow transition-all flex-shrink-1 whitespace-nowrap ${
@@ -68,5 +75,10 @@ export default function WishlistButton({ user, product }) {
         >
         {isWishlisted ? 'Unwishlist' : 'Add to Wishlist'}
         </button>
+        <LoginPrompt
+        visible={showLoginPrompt}
+        onClose={() => setShowLoginPrompt(false)}
+        />
+        </div>
     );
 }
