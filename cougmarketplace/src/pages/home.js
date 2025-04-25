@@ -18,7 +18,6 @@ export default function Home() {
   const [tagQuery, setTagQuery]= useState('');
   const [tagDropdownOpen, setTagDropdownOpen] = useState(false);
   const [unreadMessagesm , setUnreadMessages] = useState(0);
-  const tagDropdownRef = useRef(null)
   const router = useRouter();
 
   useEffect(() => {
@@ -90,26 +89,6 @@ export default function Home() {
     }
   };
 
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (
-        tagDropdownRef.current &&
-        !tagDropdownRef.current.contains(event.target)
-      ) {
-        setTagDropdownOpen(false);
-      }
-    }
-
-    if (tagDropdownOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    } else {
-      document.removeEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [tagDropdownOpen]);
   // Fetch products, tags, and images
   useEffect(() => {
     const fetchProducts = async () => {
