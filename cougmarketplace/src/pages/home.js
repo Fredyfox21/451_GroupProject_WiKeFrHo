@@ -222,6 +222,7 @@ export default function Home() {
   return (
     <div className="MainPage">
       <div className="Title and User Info flex justify-between w-full">
+        
       <Image
               src="/Images/pexels-boomheadshot-31139015.jpg"
               alt="Background"
