@@ -5,6 +5,7 @@ import { useRouter } from 'next/router';
 import { toast, ToastContainer } from 'react-toastify';  // Import toast and ToastContainer
 import 'react-toastify/dist/ReactToastify.css'; // Import the styles
 import Confetti from 'react-confetti'; // Import Confetti
+import HomeButton from "@/components/HomeButton";
 import Image from "next/image";
 
 export default function Profile(){
@@ -112,7 +113,7 @@ export default function Profile(){
         
         const { error: updateError } = await supabase
           .from("userImage")
-          .update({ image: publicURL.publicUrl})
+          .upsert({ image: publicURL.publicUrl, user_id: user.id})
           .eq("user_id", user.id);
       
         if (updateError) {
@@ -158,6 +159,9 @@ export default function Profile(){
             className="flex flex-col items-center justify-center min-h-screen bg-gray-300 p-6" 
             style={{ backgroundImage: 'url("/Images/dacoogasbg.png")', backgroundSize: 'cover', backgroundPosition: 'center' }}
         >
+          <div className=" absolute top-0 left-0 m-4">
+              <HomeButton className="w-12 h-12"/>
+          </div>
             <div className="bg-gray-200 shadow-lg rounded-lg p-6 flex flex-col items-center w-full max-w-md">
 
               
@@ -236,20 +240,7 @@ export default function Profile(){
                     </button>
                 </form>
             </div>
-            <div href="/" className="inline-block p-2 bg-gray-200 rounded-full hover:bg-gray-300 absolute top-0 left-0 m-4">
-                    <button onClick={goToHome} className="">
-                        <Image
-                        src="/Images/washington-state-logo-png-transparent.png" 
-                        alt="HomeButton" 
-                        layout= "fixed"
-                        width={500}
-                        height={500}
-                        quality={100}
-                        className="h-6 w-6"
-                        />
-                    </button>
-                        
-                    </div>
+            
             {/* Confetti Animation */}
             {showConfetti && <Confetti width={window.innerWidth} height={window.innerHeight} />}
 

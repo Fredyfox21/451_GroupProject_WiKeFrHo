@@ -5,6 +5,7 @@ import { useRouter } from 'next/router';
 import Image from "next/image";
 import SearchBar from '@/components/SearchBar';
 import TagFilter from '@/components/TagFilter';
+import LoginPrompt from "../components/LoginPrompt";
 
 
 export default function Home() {
@@ -19,6 +20,8 @@ export default function Home() {
   const [tagDropdownOpen, setTagDropdownOpen] = useState(false);
   const [unreadMessagesm , setUnreadMessages] = useState(0);
   const router = useRouter();
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+
 
   useEffect(() => {
     const checkUser = async () => {
@@ -27,13 +30,12 @@ export default function Home() {
       if (error) {
         // Safely check for error before accessing message
         console.error("Error fetching user:", error?.message);
-        router.push("/login");
       } else if (!data?.session?.user) {
-        router.push("/login"); // If no user in session, redirect to login
+        setUser(null);
       } else {
         setUser(data.session.user); // The user object is in data.session.user
       }
-
+      
     };
 
     checkUser();  
@@ -80,13 +82,19 @@ export default function Home() {
 
     }, [user]);
 
-  const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      console.error("Logout error:", error.message);
-    } else {
-      router.push("/login"); // Redirect after logout
+  const handleLogout_Login = async () => {
+      if(user){
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("Logout error:", error.message);
+      } else {
+        router.push("/"); // Redirect after logout
+      }
     }
+    else{
+      router.push("/login");
+    }
+
   };
 
   // Fetch products, tags, and images
@@ -169,12 +177,45 @@ export default function Home() {
 
 
   const goToUser = () =>{
+    if (!user) {
+      setShowLoginPrompt(true);
+      return;
+    }
     router.push(`/profile`)
   };
 
   const goToMyProducts = () => {
+      if (!user) {
+        setShowLoginPrompt(true);
+        return;
+      }
     router.push('/myProducts');
   };  
+
+  const createProduct = () => {
+    if (!user) {
+      setShowLoginPrompt(true);
+      return;
+    }
+    router.push('/createProduct');
+  }
+
+  const goToChat = () => {
+    if (!user) {
+      setShowLoginPrompt(true);
+      return;
+    }
+    router.push('/chats');
+  }
+
+  const goToWishList = () => {
+    if (!user) {
+      setShowLoginPrompt(true);
+      return;
+    }
+    router.push('/myWishlist');
+  }
+
 
 
 
@@ -190,42 +231,61 @@ export default function Home() {
               className="z-[-1] opacity-100"
             />
         
-        <div className="User Info flex flex-col w-1/9 sm:w-1/8 md:w-1/7 lg:w-1/6 xl:w-1/5 gap-4 justify-start items-center p-0 sm:p-1 md:p-2 lg:p-3 xl:p-4 m-4 bg-gray-400 rounded ml-auto">
+        <div className="UserInfo flex flex-col w-2/12 sm:w-2/12 md:w-2/12 lg:w-1/12 xl:w-1/12 gap-4 justify-start items-center p-0 sm:p-1 md:p-2 lg:p-3 xl:p-4 m-4 bg-gray-400 rounded ml-auto">
           
           <div className="User flex">
 
             {user ? (
             <p className="text-xs text-gray-900 font-bold"> Logged in as {user.email}</p>
              ) : (
-              <p>Loading...</p>
+              <p>No Active User</p>
               )}
 
           </div>
 
-        <div className="Logout flex flex-col gap-2 w-full  justify-center items-center">
+        <div className="Logout flex flex-col gap-2 justify-center items-center">
 
-          <div className="Logout flex justify-center items-center w-3/5 bg-red-800 hover:bg-red-900 rounded ">
-          
-          <button onClick={handleLogout} className=" text-base text-center text-white ">Log out</button>
-
+          <div className="">
+          <button
+            onClick={handleLogout_Login}
+            className="bg-red-800 hover:bg-red-900 text-white text-xs rounded w-20 h-8 flex items-center justify-center"
+          >
+            Log in / Log out
+          </button>
           </div>
 
-          <div className="Logout flex justify-center items-center w-3/5 bg-red-800 hover:bg-red-900 rounded">
+
+          <div className="">
           
           <button 
             onClick={goToUser}
-           className="text-base text-center text-white">Edit Profile</button>
-
+           className="bg-red-800 hover:bg-red-900 text-white text-xs rounded w-20 h-8 flex items-center justify-center"
+           >Edit Profile</button>
+          <LoginPrompt
+            visible={showLoginPrompt}
+            onClose={() => setShowLoginPrompt(false)}
+          />
           </div>
 
-          <div className="Logout flex justify-center items-center w-3/5 bg-red-800 hover:bg-red-900 rounded">
-            <button onClick={() => router.push('/createProduct')} className="text-base text-center text-white">Create Product</button>
+          <div className="">
+            <button onClick={createProduct} 
+            className="bg-red-800 hover:bg-red-900 text-white text-xs rounded w-20 h-8 flex items-center justify-center"
+            >Create Product</button>
+            <LoginPrompt
+              visible={showLoginPrompt}
+              onClose={() => setShowLoginPrompt(false)}
+            />
           </div>
 
-          <div className="Logout flex justify-center items-center w-3/5 bg-red-800 hover:bg-red-900 rounded">
-          <button onClick={goToMyProducts} className="text-base text-center text-white">
+          <div className="">
+          <button onClick={goToMyProducts} className="bg-red-800 hover:bg-red-900 text-white text-xs rounded w-20 h-8 flex items-center justify-center">
             My Products
             </button>
+            
+            <LoginPrompt
+            visible={showLoginPrompt}
+            onClose={() => setShowLoginPrompt(false)}
+            />
             </div>
           
           {/* <div className="Logout flex justify-center items-center w-1/2 bg-red-800 hover:bg-red-900 rounded">
@@ -235,25 +295,32 @@ export default function Home() {
 
           </div> */}
 
-          <div className="Logout flex justify-center items-center w-3/5 bg-red-800 hover:bg-red-900 rounded">
-            <button onClick={() => router.push('/chats')} className="text-base text-center text-white">Messages ({unreadMessagesm} unread) </button>
+          <div className="">
+            <button onClick={goToChat} 
+            className="bg-red-800 hover:bg-red-900 text-white text-xs rounded w-20 h-8 flex items-center justify-center"
+            >Messages ({unreadMessagesm} unread) 
+            </button>
+            <LoginPrompt
+              visible={showLoginPrompt}
+              onClose={() => setShowLoginPrompt(false)}
+          />
           </div>
 
-          <div className="Logout flex justify-center items-center w-3/5 bg-red-800 hover:bg-red-900 rounded">
-          <button onClick={() => router.push('/myWishlist')} className="text-base text-center text-white">Wishlist</button>
+          <div className="">
+          <button onClick={goToWishList} className="bg-red-800 hover:bg-red-900 text-white text-xs rounded w-20 h-8 flex items-center justify-center">Wishlist</button>
           </div>
 
         </div>
         </div>
 
-        <div href="/" className="inline-block p-2 bg-gray-200 rounded-full hover:bg-gray-300 absolute top-0 left-0 m-4">
-        <button onClick={goToHome} className="">
+        <div href="/" className=" absolute top-0 left-0 m-4">
+        <button onClick={goToHome} className="rounded-full p-2 bg-white flex items-center justify-center">
             <Image
             src="/Images/washington-state-logo-png-transparent.png" 
             alt="HomeButton" 
             layout= "fixed"
-            width={500}
-            height={500}
+            width={48}
+            height={48}
             quality={100}
             className="h-6 w-6"
             />

@@ -17,13 +17,7 @@ export default function index() {
 
       checkUser();
 
-      if (user == null)
-      {
-        router.push("/login");
-      }
-      else {
-        router.push("/home");
-      }
+      router.push("/home");
 
     }, [])
     return (
