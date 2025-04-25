@@ -3,6 +3,8 @@ import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../utils/supabase';
 import { useRouter } from 'next/router';
 import Image from "next/image";
+import SearchBar from '@/components/SearchBar';
+import TagFilter from '@/components/TagFilter';
 
 
 export default function Home() {
@@ -196,6 +198,7 @@ export default function Home() {
   };  
 
 
+
   return (
     <div className="MainPage">
       <div className="Title and User Info flex justify-between w-full">
@@ -257,6 +260,10 @@ export default function Home() {
             <button onClick={() => router.push('/chats')} className="text-base text-center text-white">Messages ({unreadMessagesm} unread) </button>
           </div>
 
+          <div className="Logout flex justify-center items-center w-3/5 bg-red-800 hover:bg-red-900 rounded">
+          <button onClick={() => router.push('/myWishlist')} className="text-base text-center text-white">Wishlist</button>
+          </div>
+
         </div>
         </div>
 
@@ -279,111 +286,17 @@ export default function Home() {
           <h1 className="text-4xl font-bold text-center mb-6" style={{ fontFamily: 'Orbitron' }}>
             COUG MARKETPLACE
           </h1>
-
-          {/* search Bar */}
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              setSearchTerm(e.target.search.value.trim());
-            }}
-          >
-            <input
-              type="text"
-              name="search"
-              placeholder="Search for products..."
-              className="w-full p-2 rounded bg-gray-500 text-white placeholder-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-white"
-            />
-          </form>
-
-          {/* Tag Filter Dropdown */}
-          <div className="relative mt-4 w-full">
-            <button
-              type="button"
-              onClick={() => setTagDropdownOpen(!tagDropdownOpen)}
-              className="w-full text-left bg-white border border-gray-300 rounded p-2 text-gray-700 hover:ring-2 ring-red-400 focus:outline-none"
-            >
-              {selectedTags.length > 0
-                ? `Filter tags (${selectedTags.length})`
-                : "Select tags"}
-            </button>
-
-            {tagDropdownOpen && (
-              <div
-                ref={tagDropdownRef}
-                className="absolute z-10 w-full mt-2 bg-white border border-gray-300 rounded shadow-lg"
-              >
-                {/* Tag Search */}
-                <div className="p-2">
-                  <input
-                    type="text"
-                    placeholder="Search tags..."
-                    onChange={(e) => setTagQuery(e.target.value)}
-                    className="w-full p-2 rounded bg-gray-100 text-gray-800 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500"
-                  />
-                </div>
-
-                {/* Tag Options */}
-                <div className="max-h-30 overflow-y-auto divide-y divide-gray-100">
-                  <div className="grid grid-cols-1 gap-1">
-                    {allTags
-                      .filter(tag => tag.toLowerCase().includes(tagQuery.toLowerCase()))
-                      .map(tag => {
-                        const isSelected = selectedTags.includes(tag);
-                        return (
-                          <div
-                            key={tag}
-                            onClick={() => {
-                              setSelectedTags(
-                                isSelected
-                                  ? selectedTags.filter(t => t !== tag)
-                                  : [...selectedTags, tag]
-                              );
-                            }}
-                            className={`cursor-pointer px-4 py-2 text-sm ${
-                              isSelected
-                                ? "bg-red-200 text-gray-800 font-semibold"
-                                : "text-gray-700 hover:bg-gray-100"
-                            }`}
-                          >
-                            {tag}
-                          </div>
-                        );
-                      })}
-                  </div>
-                </div>
-
-                {/* Selected Tags */}
-                <div className="p-2 border-t border-gray-200">
-                  <div className="flex flex-wrap gap-2">
-                    {selectedTags.map(tag => (
-                      <span
-                        key={tag}
-                        className="bg-red-600 text-white text-xs px-3 py-1 rounded-full flex items-center"
-                      >
-                        {tag}
-                        <button
-                          onClick={() =>
-                            setSelectedTags(selectedTags.filter(t => t !== tag))
-                          }
-                          className="ml-2 text-white hover:text-gray-200"
-                        >
-                          &times;
-                        </button>
-                      </span>
-                    ))}
-                  </div>
-                  {selectedTags.length > 0 && (
-                    <button
-                      onClick={() => setSelectedTags([])}
-                      className="mt-2 text-sm text-red-600 hover:underline"
-                    >
-                      Clear all
-                    </button>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
+          <SearchBar setSearchTerm={setSearchTerm} />
+          <TagFilter
+            allTags={allTags}
+            selectedTags={selectedTags}
+            setSelectedTags={setSelectedTags}
+            tagDropdownOpen={tagDropdownOpen}
+            setTagDropdownOpen={setTagDropdownOpen}
+            tagQuery={tagQuery}
+            setTagQuery={setTagQuery}
+          />
+         
         </div>
       </div>
 
