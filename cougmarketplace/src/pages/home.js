@@ -222,16 +222,16 @@ export default function Home() {
   return (
     <div className="MainPage">
       <div className="Title and User Info flex justify-between w-full">
-        
-      <Image
-              src="/Images/pexels-boomheadshot-31139015.jpg"
-              alt="Background"
-              layout="fill"
-              objectFit="cover"
-              quality={100}
-              className="z-[-1] opacity-100"
-            />
-        
+       <div className= "fixed top-0 left-0 w-full h-screen -z-10 transition-opacity duration-1000 ease-in-out bg-cover bg-center"  >
+        <Image
+                src="/Images/pexels-boomheadshot-31139015.jpg"
+                alt="Background"
+                layout="fill"
+                objectFit="cover"
+                quality={100}
+                className="z-[-1] opacity-100"
+              />
+        </div>
         <div className="UserInfo flex flex-col w-2/12 sm:w-2/12 md:w-2/12 lg:w-1/12 xl:w-1/12 gap-4 justify-start items-center p-0 sm:p-1 md:p-2 lg:p-3 xl:p-4 m-4 bg-gray-400 rounded ml-auto">
           
           <div className="User flex">
