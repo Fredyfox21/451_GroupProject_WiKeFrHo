@@ -19,7 +19,6 @@ export default function Home() {
   const [tagQuery, setTagQuery]= useState('');
   const [tagDropdownOpen, setTagDropdownOpen] = useState(false);
   const [unreadMessagesm , setUnreadMessages] = useState(0);
-  const tagDropdownRef = useRef(null)
   const router = useRouter();
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
@@ -98,26 +97,6 @@ export default function Home() {
 
   };
 
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (
-        tagDropdownRef.current &&
-        !tagDropdownRef.current.contains(event.target)
-      ) {
-        setTagDropdownOpen(false);
-      }
-    }
-
-    if (tagDropdownOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    } else {
-      document.removeEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [tagDropdownOpen]);
   // Fetch products, tags, and images
   useEffect(() => {
     const fetchProducts = async () => {
@@ -243,16 +222,17 @@ export default function Home() {
   return (
     <div className="MainPage">
       <div className="Title and User Info flex justify-between w-full">
-      <Image
-              src="/Images/pexels-boomheadshot-31139015.jpg"
-              alt="Background"
-              layout="fill"
-              objectFit="cover"
-              quality={100}
-              className="z-[-1] opacity-100"
-            />
-        
-        <div className="UserInfo flex flex-col w-2/12 sm:w-2/12 md:w-2/12 lg:w-1/12 xl:w-1/12 gap-4 justify-start items-center p-0 sm:p-1 md:p-2 lg:p-3 xl:p-4 m-4 bg-gray-400 rounded ml-auto">
+       <div className= "fixed top-0 left-0 w-full h-screen -z-10 transition-opacity duration-1000 ease-in-out bg-cover bg-center"  >
+        <Image
+                src="/Images/pexels-boomheadshot-31139015.jpg"
+                alt="Background"
+                layout="fill"
+                objectFit="cover"
+                quality={100}
+                className="z-[-1] opacity-100"
+              />
+        </div>
+        <div className="UserInfo flex flex-col w-2/12 sm:w-2/12 md:w-2/12 lg:w-1/12 xl:w-1/8 gap-4 justify-start items-center p-0 sm:p-1 md:p-2 lg:p-3 xl:p-4 m-4 bg-gray-400 rounded ml-auto">
           
           <div className="User flex">
 
@@ -309,10 +289,13 @@ export default function Home() {
             />
             </div>
           
-          <div className="Logout flex justify-center items-center w-1/2 bg-red-800 hover:bg-red-900 rounded">
+          <div className="">
 
-          <button onClick={() => router.push('/viewProfile')} className="text-base text-center text-white">View Profile</button>
-
+            <button onClick={() => router.push('/viewProfile')} className="bg-red-800 hover:bg-red-900 text-white text-xs rounded w-20 h-8 flex items-center justify-center">View Profile</button>
+            <LoginPrompt
+              visible={showLoginPrompt}
+              onClose={() => setShowLoginPrompt(false)}
+              />
           </div>
 
           <div className="">
@@ -368,9 +351,9 @@ export default function Home() {
 
 
       {/* The cool Products */}
-      <div className="p-8 mt-40">
+      <div className="p-8 mt-30">
 
-        <h2 className="text-3xl font-bold text-grey mb-6">Listed Products</h2>
+        <h2 className="text-3xl font-bold text-white mb-6">Listed Products</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {products.map((product) => (
             <div key={product.product_id} className="bg-white rounded-xl shadow-md overflow-hidden">

@@ -137,7 +137,7 @@ export default function Product() {
     }, [images]);
 
     const navigateToSeller = (e) => {
-        e.preventDefault();
+        router.push(`/viewProfile?id=${product.seller_id}`);
         // Navigate to the seller's profile once it's implemented
     };
 
@@ -180,7 +180,7 @@ export default function Product() {
                 if (relatedProductIds.length === 0) {
                     setSimilarProducts([]);
                     return;
-                }
+                }   
     
                 const { data: similarProductsData, error: similarProductsError } = await supabase
                     .from('product')
@@ -206,7 +206,7 @@ export default function Product() {
 
     return (
         
-        <div className="min-h-screen bg-cover bg-center" style={{ backgroundImage: "url('/images/pexels-boomheadshot-31139015.jpg')" }}>
+        <div className="min-h-screen bg-cover bg-center" style={{ backgroundImage: "url('/Images/pexels-boomheadshot-31139015.jpg')" }}>
 
             <div href="/" className=" absolute top-0 left-0 m-4">
                     <button onClick={() => router.push("/home")} className="rounded-full p-2 bg-white flex items-center justify-center">
@@ -313,20 +313,35 @@ export default function Product() {
                         </span>
 
                         <div className="flex gap-4 mt-4">
-                            <button
-                                onClick={makeAnOffer}
-                                className="bg-red-600 text-white px-6 py-2 text-medium font-medium rounded-lg shadow hover:bg-red-700 transition-all flex-shrink-1 whitespace-nowrap"
-                            >
-                                Make an Offer
-                            </button>
 
-                            <WishlistButton user={user} product={product}/>
+                            {user && product && user.id === product.seller_id ? (
+
+                                <button
+                                    onClick={() => router.push(`/editProduct?id=${product.product_id}`)}
+                                    className="bg-red-600 text-white px-6 py-2 text-medium font-medium rounded-lg shadow hover:bg-red-700 transition-all"
+                                >
+                                    Edit Product
+                                </button>
+                            ) : (
+                                <>
+                                    <button
+                                    onClick={makeAnOffer}
+                                    className="bg-red-600 text-white px-6 py-2 text-medium font-medium rounded-lg shadow hover:bg-red-700 transition-all flex-shrink-1 whitespace-nowrap"
+                                    >
+                                        Make an Offer
+                                    </button>
+
+                                    <WishlistButton user={user} product={product}/>
 
 
-                            <LoginPrompt
-                                visible={showLoginPrompt}
-                            onClose={() => setShowLoginPrompt(false)}
-                            />
+                                    <LoginPrompt
+                                        visible={showLoginPrompt}
+                                    onClose={() => setShowLoginPrompt(false)}
+                                    />
+                                </>
+                            
+                            )}
+
                         </div>
                     </div>
 
