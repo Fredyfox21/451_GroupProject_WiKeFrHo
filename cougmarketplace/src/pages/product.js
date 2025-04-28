@@ -137,7 +137,7 @@ export default function Product() {
     }, [images]);
 
     const navigateToSeller = (e) => {
-        e.preventDefault();
+        router.push(`/viewProfile?id=${product.seller_id}`);
         // Navigate to the seller's profile once it's implemented
     };
 
