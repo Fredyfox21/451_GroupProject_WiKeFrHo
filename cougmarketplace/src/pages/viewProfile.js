@@ -1,3 +1,4 @@
+import "../app/globals.css";
 import { useState, useEffect } from 'react';
 import { supabase } from '../utils/supabase';
 import { useRouter } from 'next/router';
